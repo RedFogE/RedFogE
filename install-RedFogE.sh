@@ -112,9 +112,8 @@ install_exploitation() {
   rvm use 3.3.8 --default
 
   log_and_retry "$log" git clone https://github.com/rapid7/metasploit-framework.git ~/metasploit-framework
-  cd ~/metasploit-framework
   gem install bundler
-  bundle install
+  bundle install --gemfile ~/metasploit-framework/Gemfile
 
   echo 'export PATH="$PATH:$HOME/metasploit-framework"' >> ~/.bashrc
   sudo ln -sf ~/metasploit-framework/msfconsole /usr/local/bin/msfconsole
