@@ -146,10 +146,12 @@ install_exploitation() {
   enable_crb
   log_and_retry "$log" sudo dnf install -y postgresql postgresql-devel libyaml-devel libpcap-devel libxml2-devel libxslt-devel gnupg2 curl
 
+  # NOTE: Do not wrap the following RVM installation commands in log_and_retry
+  # They require direct execution due to piped input and sourcing behavior.  
   echo "Installing RVM and Ruby..."
-  log_and_retry "$log" curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
-  log_and_retry "$log" curl -sSL https://rvm.io/pkuczynski.asc | gpg2 --import -
-  log_and_retry "$log" curl -sSL https://get.rvm.io | bash -s stable
+  curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
+  curl -sSL https://rvm.io/pkuczynski.asc | gpg2 --import -
+  curl -sSL https://get.rvm.io | bash -s stable
 
   if [ -s "$HOME/.rvm/scripts/rvm" ]; then
     source "$HOME/.rvm/scripts/rvm"
