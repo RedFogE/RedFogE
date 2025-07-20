@@ -141,7 +141,7 @@ install_password_crackers() {
   echo "Installing password cracking tools..."
   validate_7z
   # John the Ripper
-  log_and_retry "$log" sudo mkdir -p /opt/john && cd /opt
+  log_and_retry "$log" cd /opt
   log_and_retry "$log" sudo curl -LO https://www.openwall.com/john/k/john-1.9.0-jumbo-1.tar.gz
   log_and_retry "$log" sudo tar -xzf john-1.9.0-jumbo-1.tar.gz && sudo rm -f john-1.9.0-jumbo-1.tar.gz
   log_and_retry "$log" sudo mv john-1.9.0-jumbo-1 john
