@@ -62,12 +62,19 @@ enable_crb() {
   log_and_retry "$log" sudo dnf makecache
 }
 
+validate_7z() {
+  if ! command -v 7z >/dev/null 2>&1; then
+    echo "[!] 7z not found. Installing p7zip..."
+    sudo dnf install -y p7zip p7zip-plugins
+  fi
+}
+
 install_base() {
   local log="$LOG_DIR/01-base.log"
   echo "Installing base packages..."
   log_and_retry "$log" sudo dnf install -y epel-release dnf-plugins-core
   log_and_retry "$log" sudo dnf groupinstall -y "Development Tools"
-  log_and_retry "$log" sudo dnf install -y vim unzip zip the_silver_searcher net-tools whois traceroute curl wget bind-utils bash-completion cockpit \
+  log_and_retry "$log" sudo dnf install -y vim unzip zip p7zip p7zip-plugins the_silver_searcher net-tools whois traceroute curl wget bind-utils bash-completion cockpit \
     git gcc make zlib-devel openssl-devel libffi-devel readline-devel sqlite-devel bzip2 autoconf automake \
     libtool patch java-11-openjdk-devel ncurses-devel gnupg2 python3 python3-pip
   INSTALLED_SOFTWARE+=("Base Packages")
@@ -132,6 +139,7 @@ install_exploitation() {
 install_password_crackers() {
   local log="$LOG_DIR/05-passwords.log"
   echo "Installing password cracking tools..."
+  validate_7z
   # John the Ripper
   log_and_retry "$log" sudo mkdir -p /opt/john && cd /opt
   log_and_retry "$log" sudo curl -LO https://www.openwall.com/john/k/john-1.9.0-jumbo-1.tar.gz
