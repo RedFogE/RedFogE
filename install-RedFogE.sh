@@ -28,7 +28,7 @@
 ### Interactive Cybersecurity Lab Installer for AlmaLinux 9.6 ###
 # Description: Menu-based installer to selectively install cybersecurity tools on a headless AlmaLinux 9.6 VM
 
-set -euo pipefail
+set -eo pipefail
 
 ### CONFIGURATION ###
 LOG_DIR="$HOME/lab-install-logs"
@@ -154,12 +154,7 @@ install_exploitation() {
   curl -sSL https://get.rvm.io | bash -s stable
 
   if [ -s "$HOME/.rvm/scripts/rvm" ]; then
-    set +u  # Disable unset variable checking temporarily
-    declare -g _system_name="$(uname -s 2>/dev/null || echo Linux)"
-    export _system_name
-    # shellcheck disable=SC1090
     source "$HOME/.rvm/scripts/rvm"
-    set -u  # Re-enable strict unset variable checking
   else
     echo "[!] RVM not found. Exiting."
     exit 1
