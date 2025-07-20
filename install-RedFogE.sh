@@ -147,7 +147,7 @@ install_exploitation() {
   log_and_retry "$log" sudo dnf install -y postgresql postgresql-devel libyaml-devel libpcap-devel libxml2-devel libxslt-devel gnupg2 curl
 
   # NOTE: Do not wrap the following RVM installation commands in log_and_retry
-  # They require direct execution due to piped input and sourcing behavior.  
+  # They require direct execution due to piped input and sourcing behavior.
   echo "Installing RVM and Ruby..."
   curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
   curl -sSL https://rvm.io/pkuczynski.asc | gpg2 --import -
@@ -155,27 +155,29 @@ install_exploitation() {
 
   if [ -s "$HOME/.rvm/scripts/rvm" ]; then
     # Fix for RVM under 'set -u': avoids 'unbound variable' error when RVM expects _system_name
-    export _system_name="$(uname -s 2>/dev/null || echo Linux)"  
+    export _system_name="$(uname -s 2>/dev/null || echo Linux)"
+    # shellcheck disable=SC1090
     source "$HOME/.rvm/scripts/rvm"
   else
     echo "[!] RVM not found. Exiting."
     exit 1
   fi
 
-  log_and_retry "$log" rvm install 3.3.8
-  log_and_retry "$log" rvm use 3.3.8 --default
+  rvm install 3.3.8
+  rvm use 3.3.8 --default
 
-  log_and_retry "$log" git clone https://github.com/rapid7/metasploit-framework.git ~/metasploit-framework
-  log_and_retry "$log" gem install bundler
-  log_and_retry "$log" bundle install --gemfile ~/metasploit-framework/Gemfile
+  git clone https://github.com/rapid7/metasploit-framework.git "$HOME/metasploit-framework"
+  gem install bundler || { echo "[!] Gem install failed"; exit 1; }
+  bundle install --gemfile "$HOME/metasploit-framework/Gemfile" || { echo "[!] Bundle install failed"; exit 1; }
 
-  echo 'export PATH="$PATH:$HOME/metasploit-framework"' >> ~/.bashrc
-  log_and_retry "$log" sudo ln -sf ~/metasploit-framework/msfconsole /usr/local/bin/msfconsole
-  source ~/.bashrc
+  echo 'export PATH="$PATH:$HOME/metasploit-framework"' >> "$HOME/.bashrc"
+  sudo ln -sf "$HOME/metasploit-framework/msfconsole" /usr/local/bin/msfconsole
+  source "$HOME/.bashrc"
 
   INSTALLED_SOFTWARE+=("Metasploit Framework")
   record_binary "msfconsole"
 }
+
 
 install_password_crackers() {
   local log="$LOG_DIR/05-passwords.log"
