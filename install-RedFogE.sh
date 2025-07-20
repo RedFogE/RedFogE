@@ -135,7 +135,7 @@ install_password_crackers() {
   # John the Ripper
   log_and_retry "$log" sudo mkdir -p /opt/john && cd /opt
   log_and_retry "$log" sudo curl -LO https://www.openwall.com/john/k/john-1.9.0-jumbo-1.tar.gz
-  log_and_retry "$log" sudo tar -xzf john-1.9.0-jumbo-1.tar.gz && rm -f john-1.9.0-jumbo-1.tar.gz
+  log_and_retry "$log" sudo tar -xzf john-1.9.0-jumbo-1.tar.gz && sudo rm -f john-1.9.0-jumbo-1.tar.gz
   log_and_retry "$log" sudo mv john-1.9.0-jumbo-1 john
   log_and_retry "$log" cd /opt/john/src && sudo ./configure && sudo make -s clean && sudo make -sj$(nproc)
   echo "alias john='/opt/john/run/john'" >> ~/.bashrc
