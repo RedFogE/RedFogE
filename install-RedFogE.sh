@@ -73,23 +73,7 @@ validate_7z() {
 install_john_optional_libs() {
   local log="$LOG_DIR/optional-libs.log"
   echo "Installing optional libraries for John the Ripper..."
-  log_and_retry "$log" sudo dnf install -y \
-    openssl-devel \
-    gmp-devel \
-    zlib-devel \
-    bzip2-devel \
-    libpcap-devel \
-    unrar \
-    openmpi-devel \
-    libtool \
-    automake \
-    autoconf \
-    yasm \
-    pkgconfig \
-    gcc-c++ \
-    git \
-    cmake \
-    make
+  log_and_retry "$log" sudo dnf install -y openssl-devel gmp-devel zlib-devel bzip2-devel libpcap-devel unrar openmpi-devel libtool automake autoconf yasm pkgconfig gcc-c++ git cmake make
 }
 
 install_base() {
@@ -97,7 +81,7 @@ install_base() {
   echo "Installing base packages..."
   log_and_retry "$log" sudo dnf install -y epel-release dnf-plugins-core
   log_and_retry "$log" sudo dnf groupinstall -y "Development Tools"
-  log_and_retry "$log" sudo dnf install -y vim unzip zip p7zip p7zip-plugins the_silver_searcher net-tools whois traceroute curl wget bind-utils bash-completion cockpit \
+  log_and_retry "$log" sudo dnf install -y vim screen unzip zip p7zip p7zip-plugins the_silver_searcher net-tools whois traceroute curl wget bind-utils bash-completion cockpit \
     git gcc make zlib-devel openssl-devel libffi-devel readline-devel sqlite-devel bzip2 autoconf automake \
     libtool patch java-11-openjdk-devel ncurses-devel gnupg2 python3 python3-pip
   INSTALLED_SOFTWARE+=("Base Packages")
@@ -164,7 +148,7 @@ install_password_crackers() {
   echo "Installing password cracking tools..."
   validate_7z
   install_john_optional_libs
-  
+
   # John the Ripper from GitHub (bleeding-jumbo)
   log_and_retry "$log" cd /opt
   log_and_retry "$log" sudo git clone https://github.com/openwall/john -b bleeding-jumbo john
@@ -182,11 +166,7 @@ install_password_crackers() {
   log_and_retry "$log" sudo 7z x hashcat-6.2.6.7z
   log_and_retry "$log" sudo mv hashcat-6.2.6 hashcat
   log_and_retry "$log" sudo rm -f hashcat-6.2.6.7z
-  if [ -w "/opt/hashcat" ]; then
-    sudo chown -R $USER:$USER /opt/hashcat
-  else
-    echo "[!] Warning: /opt/hashcat is not writable. Run as a user with appropriate permissions."
-  fi
+  sudo chown -R $USER:$USER /opt/hashcat
   echo 'alias hashcat="/opt/hashcat/hashcat.bin"' >> ~/.bashrc
   source ~/.bashrc
   INSTALLED_SOFTWARE+=("Hashcat")
@@ -234,7 +214,8 @@ show_menu() {
   echo "6) 🛡️ Blue Team Tools"
   echo "7) 🐍 Python Hacking Libraries"
   echo "8) 🧰 Virtualization Helpers"
-  echo "9) 🧾 Finish & Exit"
+  echo "9) 🦾 Finish & Exit"
+  echo "10) 🔁 Reboot System Now"
   echo "==============================================="
 }
 
@@ -252,7 +233,7 @@ print_summary() {
 
 while true; do
   show_menu
-  read -rp "Select an option [1-9]: " choice
+  read -rp "Select an option [1-10]: " choice
   case $choice in
     1) install_base;;
     2) install_recon;;
@@ -263,6 +244,7 @@ while true; do
     7) install_python_libs;;
     8) install_virtualization_helpers;;
     9) print_summary; echo "✅ Installation complete. Reloading shell..."; exec bash;;
+    10) print_summary; echo "🔁 Rebooting..."; sudo reboot;;
     *) echo "❌ Invalid choice. Try again.";;
   esac
   echo "\n✅ Done. Press Enter to continue..."
@@ -271,5 +253,4 @@ while true; do
   echo "Resuming menu..."
   sleep 1
   clear
-
 done
