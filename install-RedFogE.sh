@@ -107,13 +107,20 @@ install_exploitation() {
   curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
   curl -sSL https://rvm.io/pkuczynski.asc | gpg2 --import -
   curl -sSL https://get.rvm.io | bash -s stable
-  source ~/.rvm/scripts/rvm
+
+  if [ -s "$HOME/.rvm/scripts/rvm" ]; then
+    source "$HOME/.rvm/scripts/rvm"
+  else
+    echo "[!] RVM not found. Exiting."
+    exit 1
+  fi
+
   rvm install 3.3.8
   rvm use 3.3.8 --default
 
   log_and_retry "$log" git clone https://github.com/rapid7/metasploit-framework.git ~/metasploit-framework
-  gem install bundler
-  bundle install --gemfile ~/metasploit-framework/Gemfile
+  gem install bundler || { echo "[!] Gem install failed"; exit 1; }
+  bundle install --gemfile ~/metasploit-framework/Gemfile || { echo "[!] Bundle install failed"; exit 1; }
 
   echo 'export PATH="$PATH:$HOME/metasploit-framework"' >> ~/.bashrc
   sudo ln -sf ~/metasploit-framework/msfconsole /usr/local/bin/msfconsole
@@ -123,21 +130,33 @@ install_exploitation() {
 }
 
 install_password_crackers() {
-  local log="$LOG_DIR/05-crackers.log"
-  echo "Installing John the Ripper..."
-  cd /opt && log_and_retry "$log" sudo git clone https://github.com/openwall/john -b bleeding-jumbo john
-  cd /opt/john/src && log_and_retry "$log" sudo ./configure && sudo make -sj$(nproc)
-  echo 'export PATH="/opt/john/run:$PATH"' >> ~/.bashrc && source ~/.bashrc
+  local log="$LOG_DIR/05-passwords.log"
+  echo "Installing password cracking tools..."
+  # John the Ripper
+  log_and_retry "$log" sudo mkdir -p /opt/john && cd /opt
+  log_and_retry "$log" sudo curl -LO https://www.openwall.com/john/k/john-1.9.0-jumbo-1.tar.gz
+  log_and_retry "$log" sudo tar -xzf john-1.9.0-jumbo-1.tar.gz && rm -f john-1.9.0-jumbo-1.tar.gz
+  log_and_retry "$log" sudo mv john-1.9.0-jumbo-1 john
+  log_and_retry "$log" cd /opt/john/src && sudo ./configure && sudo make -s clean && sudo make -sj$(nproc)
+  echo "alias john='/opt/john/run/john'" >> ~/.bashrc
+  source ~/.bashrc
+  INSTALLED_SOFTWARE+=("John the Ripper")
+  record_binary "john"
 
-  echo "Installing Hashcat..."
-  cd /opt && log_and_retry "$log" sudo curl -LO https://hashcat.net/files/hashcat-6.2.6.7z
-  log_and_retry "$log" sudo dnf install -y p7zip
-  log_and_retry "$log" sudo 7za x hashcat-6.2.6.7z
+  # Hashcat
+  cd /opt
+  log_and_retry "$log" sudo curl -LO https://hashcat.net/files/hashcat-6.2.6.7z
+  log_and_retry "$log" sudo 7z x hashcat-6.2.6.7z
   log_and_retry "$log" sudo mv hashcat-6.2.6 hashcat
   log_and_retry "$log" sudo rm -f hashcat-6.2.6.7z
-  echo 'export PATH="/opt/hashcat:$PATH"' >> ~/.bashrc && source ~/.bashrc
-  INSTALLED_SOFTWARE+=("John the Ripper" "Hashcat")
-  record_binary "john"
+  if [ -w "/opt/hashcat" ]; then
+    sudo chown -R $USER:$USER /opt/hashcat
+  else
+    echo "[!] Warning: /opt/hashcat is not writable. Run as a user with appropriate permissions."
+  fi
+  echo 'alias hashcat="/opt/hashcat/hashcat.bin"' >> ~/.bashrc
+  source ~/.bashrc
+  INSTALLED_SOFTWARE+=("Hashcat")
   record_binary "hashcat"
 }
 
