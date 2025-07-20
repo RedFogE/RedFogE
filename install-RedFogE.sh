@@ -69,6 +69,29 @@ validate_7z() {
   fi
 }
 
+# 📦 Optional libraries for John the Ripper
+install_john_optional_libs() {
+  local log="$LOG_DIR/optional-libs.log"
+  echo "Installing optional libraries for John the Ripper..."
+  log_and_retry "$log" sudo dnf install -y \
+    openssl-devel \
+    gmp-devel \
+    zlib-devel \
+    bzip2-devel \
+    libpcap-devel \
+    unrar \
+    openmpi-devel \
+    libtool \
+    automake \
+    autoconf \
+    yasm \
+    pkgconfig \
+    gcc-c++ \
+    git \
+    cmake \
+    make
+}
+
 install_base() {
   local log="$LOG_DIR/01-base.log"
   echo "Installing base packages..."
@@ -140,6 +163,7 @@ install_password_crackers() {
   local log="$LOG_DIR/05-passwords.log"
   echo "Installing password cracking tools..."
   validate_7z
+  install_john_optional_libs
   
   # John the Ripper from GitHub (bleeding-jumbo)
   log_and_retry "$log" cd /opt
