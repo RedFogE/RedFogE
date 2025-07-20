@@ -140,12 +140,13 @@ install_password_crackers() {
   local log="$LOG_DIR/05-passwords.log"
   echo "Installing password cracking tools..."
   validate_7z
-  # John the Ripper
+  
+  # John the Ripper from GitHub (bleeding-jumbo)
   log_and_retry "$log" cd /opt
-  log_and_retry "$log" sudo curl -LO https://www.openwall.com/john/k/john-1.9.0-jumbo-1.tar.gz
-  log_and_retry "$log" sudo tar -xzf john-1.9.0-jumbo-1.tar.gz && sudo rm -f john-1.9.0-jumbo-1.tar.gz
-  log_and_retry "$log" sudo mv john-1.9.0-jumbo-1 john
-  log_and_retry "$log" cd /opt/john/src && sudo ./configure && sudo make -s clean && sudo make -sj$(nproc)
+  log_and_retry "$log" sudo git clone https://github.com/openwall/john -b bleeding-jumbo john
+  log_and_retry "$log" cd /opt/john/src
+  log_and_retry "$log" sudo ./configure
+  log_and_retry "$log" sudo make -sj$(nproc)
   echo "alias john='/opt/john/run/john'" >> ~/.bashrc
   source ~/.bashrc
   INSTALLED_SOFTWARE+=("John the Ripper")
