@@ -154,10 +154,12 @@ install_exploitation() {
   curl -sSL https://get.rvm.io | bash -s stable
 
   if [ -s "$HOME/.rvm/scripts/rvm" ]; then
-    # Fix for RVM under 'set -u': avoids 'unbound variable' error when RVM expects _system_name
-    export _system_name="$(uname -s 2>/dev/null || echo Linux)"
+    set +u  # Disable unset variable checking temporarily
+    declare -g _system_name="$(uname -s 2>/dev/null || echo Linux)"
+    export _system_name
     # shellcheck disable=SC1090
     source "$HOME/.rvm/scripts/rvm"
+    set -u  # Re-enable strict unset variable checking
   else
     echo "[!] RVM not found. Exiting."
     exit 1
