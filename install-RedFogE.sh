@@ -179,13 +179,16 @@ install_exploitation() {
 install_password_crackers() {
   local log="$LOG_DIR/05-passwords.log"
   echo "Installing password cracking tools..."
-
   validate_7z
   install_john_optional_libs
 
-  log_and_retry "$log" cd /opt
+  # John the Ripper from GitHub (bleeding-jumbo)
+  echo "Changing directory to /opt" | tee -a "$log"
+  cd /opt
   log_and_retry "$log" sudo git clone https://github.com/openwall/john -b bleeding-jumbo john
-  log_and_retry "$log" cd /opt/john/src
+
+  echo "Changing directory to /opt/john/src" | tee -a "$log"
+  cd /opt/john/src
   log_and_retry "$log" sudo ./configure
   log_and_retry "$log" sudo make -sj"$(nproc)"
 
@@ -195,12 +198,14 @@ install_password_crackers() {
   INSTALLED_SOFTWARE+=("John the Ripper")
   record_binary "john"
 
-  log_and_retry "$log" cd /opt
+  # Hashcat
+  echo "Changing directory to /opt" | tee -a "$log"
+  cd /opt
   log_and_retry "$log" sudo curl -LO https://hashcat.net/files/hashcat-6.2.6.7z
   log_and_retry "$log" sudo 7z x hashcat-6.2.6.7z
   log_and_retry "$log" sudo mv hashcat-6.2.6 hashcat
   log_and_retry "$log" sudo rm -f hashcat-6.2.6.7z
-  log_and_retry "$log" sudo chown -R "$USER":"$USER" /opt/hashcat
+  sudo chown -R "$USER:$USER" /opt/hashcat
 
   echo 'alias hashcat="/opt/hashcat/hashcat.bin"' >> ~/.bashrc
   source ~/.bashrc
@@ -208,6 +213,7 @@ install_password_crackers() {
   INSTALLED_SOFTWARE+=("Hashcat")
   record_binary "hashcat"
 }
+
 
 install_blue_team() {
   local log="$LOG_DIR/06-blueteam.log"
